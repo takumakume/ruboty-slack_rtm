@@ -22,10 +22,14 @@ module Ruboty
       end
 
       def say(message)
-        channel = message[:to]
-        if channel[0] == '#'
-          channel = resolve_channel_id(channel[1..-1])
-        end
+        channel = case message[:to]
+                  when '#'
+                    resolve_channel_id(channel[1..-1])
+                  when '@'
+                    resolve_user_id(channel[1..-1])
+                  else
+                    message[:to]
+                  end
 
         return unless channel
 
@@ -316,6 +320,17 @@ module Ruboty
 
           resp['user']
         end
+      end
+
+      def resolve_user_id(name)
+        ret_id = nil
+        @user_info_caches.each_pair do |id, user|
+          if user['name'] == name
+            ret_id = id
+            break
+          end
+        end
+        return ret_id
       end
 
       def channel_info(channel_id)
